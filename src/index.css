@@ -1,0 +1,198 @@
+@import "tailwindcss";
+
+/* Epilogue (variable), autohospedada y solo en latín: el contenido es inglés. El archivo
+   se precarga desde index.html, así el texto se pinta ya con la fuente definitiva y no
+   hay salto de diseño al cambiar de la de reserva. */
+@font-face {
+  font-family: 'Epilogue Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('/fonts/epilogue-latin-wght-normal.woff2') format('woff2-variations');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+    U+FEFF, U+FFFD;
+}
+
+/* Registradas para que los colores de la malla y del degradado se puedan animar. */
+@property --grid-line {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: rgb(28 27 26 / 0.055);
+}
+@property --grad-a {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #ffe3cf;
+}
+@property --grad-b {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #dcebff;
+}
+
+:root {
+  --color-paper: rgb(247, 241, 233);
+  --color-ink: #1c1b1a;
+  --color-ink-inverse: #f5f2ee;
+  --color-surface-dark: #161514;
+  --color-peach: #ffb38a;
+  --color-sky: #9cc7ff;
+  --color-fuchsia: #f2a6d8;
+  --font-display: 'Epilogue Variable', system-ui, sans-serif;
+
+  /* Colores de la página: en Contacto y Footer se invierten (ver .theme-dark). */
+  --page-bg: var(--color-paper);
+  --page-fg: var(--color-ink);
+  --grid-line: rgb(28 27 26 / 0.055);
+
+  /* Degradado de fondo: dos colores por sección (Home por defecto). */
+  --grad-a: #ffc9a3; /* melocotón */
+  --grad-b: #bcd8ff; /* azul */
+}
+
+/* Cada sección tiene su pareja de colores; al cambiar se funden (ver transition). */
+:root[data-section='projects'] {
+  --grad-a: #b9d4ff; /* azul */
+  --grad-b: #f5b8dc; /* fucsia */
+}
+:root[data-section='about'] {
+  --grad-a: #f5b8dc; /* fucsia */
+  --grad-b: #ffd0a8; /* melocotón */
+}
+
+/* Modo oscuro parcial: el blanco roto pasa a ser el negro suave y viceversa.
+   La clase la pone useScrollProgress cuando Contacto ocupa la pantalla. */
+:root.theme-dark {
+  --page-bg: var(--color-ink);
+  --page-fg: var(--color-paper);
+  --grid-line: rgb(247 241 233 / 0.07);
+  /* Colores de los orbes en Contacto (sobre el fondo oscuro). */
+  --grad-a: #f2a6d8; /* fucsia */
+  --grad-b: #9cc7ff; /* azul */
+}
+
+html,
+body {
+  margin: 0;
+  background-color: var(--page-bg);
+  color: var(--page-fg);
+  font-family: var(--font-display);
+  transition:
+    background-color 0.7s ease,
+    color 0.7s ease;
+}
+
+html {
+  transition:
+    background-color 0.7s ease,
+    color 0.7s ease,
+    --grid-line 0.7s ease,
+    --grad-a 1.4s ease,
+    --grad-b 1.4s ease;
+}
+
+/* Fondo fijo: dos orbes circulares y difuminados, centrados, que se mezclan y se
+   cruzan despacio de un lado a otro (como partículas de luz), y encima la malla de
+   cuadrados. Sin llegar a ocupar toda la página. El canvas 3D es transparente y va
+   por encima de esta capa. En Contacto (modo oscuro) los orbes se separan hacia los
+   dos lados de la pantalla.
+   Estructura: .blob-wrap coloca el orbe (y lo separa en Contacto con una transición);
+   .blob, dentro, hace la animación de vaivén. Así las dos cosas no se pisan. */
+.backdrop {
+  --grid-size: 88px;
+  --blob-size: 66vmin;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.backdrop .blob-wrap {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--blob-size);
+  height: var(--blob-size);
+  margin: calc(var(--blob-size) / -2) 0 0 calc(var(--blob-size) / -2);
+  transition: transform 1.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.backdrop .blob {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  filter: blur(64px);
+  opacity: 0.8;
+  transition: opacity 0.7s ease;
+  will-change: transform;
+}
+
+/* Cada orbe va y viene en sentido contrario y con otro ritmo, así se cruzan y la
+   mezcla cambia continuamente. */
+.backdrop .blob-a {
+  background: var(--grad-a);
+  animation: blob-a 14s ease-in-out infinite alternate;
+}
+
+/* Mezcla normal con algo de transparencia: donde se solapan los dos colores se
+   funden suavemente (multiply daba un rojo demasiado intenso con fucsia + melocotón). */
+.backdrop .blob-b {
+  background: var(--grad-b);
+  animation: blob-b 18s ease-in-out infinite alternate;
+}
+
+@keyframes blob-a {
+  from {
+    transform: translate(-26vmin, -7vmin) scale(1);
+  }
+  to {
+    transform: translate(16vmin, 9vmin) scale(1.22);
+  }
+}
+
+@keyframes blob-b {
+  from {
+    transform: translate(26vmin, 8vmin) scale(1.18);
+  }
+  to {
+    transform: translate(-16vmin, -9vmin) scale(0.92);
+  }
+}
+
+/* Malla (capa superior). */
+.backdrop::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  background-size: var(--grid-size) var(--grid-size);
+}
+
+/* Contacto: los orbes se separan hacia los lados de la pantalla (uno algo más arriba y
+   el otro algo más abajo), más tenues para que la card siga siendo lo principal. */
+:root.theme-dark .backdrop .blob-wrap-a {
+  transform: translate(-42vw, -9vh);
+}
+:root.theme-dark .backdrop .blob-wrap-b {
+  transform: translate(42vw, 11vh);
+}
+:root.theme-dark .backdrop .blob {
+  opacity: 0.55;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html,
+  body {
+    transition: none;
+  }
+  .backdrop .blob {
+    animation: none;
+  }
+  .backdrop .blob-wrap {
+    transition: none;
+  }
+}

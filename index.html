@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Jorge Vega | Web Developer — React, Three.js &amp; PHP</title>
+    <meta
+      name="description"
+      content="Portfolio of Jorge Vega, a Full-Stack Web Developer focused on Front-End. Interactive 3D websites with React and Three.js, plus PHP and MySQL back-ends."
+    />
+    <meta name="author" content="Jorge Vega" />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#f7f1e9" />
+    <!-- canonical, og:url, og:image y twitter:image necesitan URL absoluta: las inyecta
+         vite.config.js cuando está definida VITE_SITE_URL (ver .env). -->
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <!-- Open Graph / Twitter (vista previa al compartir el enlace) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Jorge Vega" />
+    <meta property="og:title" content="Jorge Vega | Web Developer" />
+    <meta
+      property="og:description"
+      content="Where architecture and design meet: interactive 3D websites with React and Three.js."
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Jorge Vega's 3D portfolio: an isometric living room with his avatar sitting on the sofa."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Jorge Vega | Web Developer" />
+    <meta
+      name="twitter:description"
+      content="Where architecture and design meet: interactive 3D websites with React and Three.js."
+    />
+
+    <!-- Datos estructurados (schema.org) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Jorge Vega",
+        "jobTitle": "Web Developer",
+        "description": "Full-Stack Web Developer focused on Front-End, combining development, web architecture and visual design.",
+        "knowsAbout": ["React", "Three.js", "JavaScript", "HTML5", "CSS3", "PHP", "MySQL"],
+        "sameAs": ["https://github.com/vegatf", "https://www.linkedin.com/in/jvegaz0/"]
+      }
+    </script>
+
+    <!-- Fuente principal: se descarga en paralelo con el CSS (evita el salto de texto). -->
+    <link
+      rel="preload"
+      href="/fonts/epilogue-latin-wght-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+
+    <!-- Precarga de los modelos y animaciones: empiezan a descargarse en paralelo con el
+         JavaScript, sin esperar a que la escena 3D lo pida. -->
+    <link rel="preload" href="/models/room.glb" as="fetch" type="model/gltf-binary" crossorigin />
+    <link rel="preload" href="/models/avatar.glb" as="fetch" type="model/gltf-binary" crossorigin />
+    <link rel="preload" href="/animations/sitting.json" as="fetch" type="application/json" crossorigin />
+    <link rel="preload" href="/animations/falling.json" as="fetch" type="application/json" crossorigin />
+    <link rel="preload" href="/animations/breathing.json" as="fetch" type="application/json" crossorigin />
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <!-- Contenido mínimo para quien navega sin JavaScript y para los rastreadores que no
+         lo ejecutan. -->
+    <noscript>
+      <main style="max-width: 40rem; margin: 4rem auto; padding: 0 1.5rem; font-family: system-ui, sans-serif; line-height: 1.6">
+        <h1>Jorge Vega</h1>
+        <p><strong>Web Developer</strong> — Where Architecture and Design Meets</p>
+        <p>
+          Full-Stack Web Developer in training with a main focus on Front-End. React, Three.js,
+          JavaScript (ES6+), HTML5, CSS3, PHP and MySQL.
+        </p>
+        <p>
+          <a href="https://github.com/vegatf">GitHub</a> ·
+          <a href="https://www.linkedin.com/in/jvegaz0/">LinkedIn</a>
+        </p>
+        <p>This portfolio is an interactive 3D experience and needs JavaScript to run.</p>
+      </main>
+    </noscript>
+
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
