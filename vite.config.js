@@ -34,6 +34,7 @@ export default defineConfig(({ mode }) => {
   const siteUrl = (env.VITE_SITE_URL || '').replace(/\/+$/, '')
 
   return {
+    base: '/portfolio/',
     plugins: [react(), tailwindcss(), seoUrls(siteUrl)],
   }
 })
