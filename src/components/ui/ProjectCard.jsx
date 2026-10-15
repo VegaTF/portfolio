@@ -35,6 +35,7 @@ export default function ProjectCard({
   date = null,
   repo = null,
   image = null,
+  thumb = null,
   accent = 'peach',
   comingSoon = false,
   compact = false,
@@ -56,7 +57,7 @@ export default function ProjectCard({
     >
       {image && (
         <img
-          src={`${import.meta.env.BASE_URL}${image}`}
+          src={`${import.meta.env.BASE_URL}${thumb ?? image}`}
           alt=""
           loading="lazy"
           decoding="async"
