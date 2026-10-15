@@ -14,6 +14,12 @@
     U+FEFF, U+FFFD;
 }
 
+/* Pantallas BAJAS (≤ 600 px: móvil en horizontal, tablets tipo Nest Hub): el ancho no
+   basta para decidir el diseño. Se usa como `short:...`. Va declarada después de los
+   breakpoints de Tailwind, así que cuando coincide con `sm:` o `md:` la regla de
+   `short:` es la que manda. Debe coincidir con `short` de sections/Works.jsx. */
+@custom-variant short (@media (max-height: 37.5rem));
+
 /* Registradas para que los colores de la malla y del degradado se puedan animar. */
 @property --grid-line {
   syntax: '<color>';
