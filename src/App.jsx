@@ -13,6 +13,7 @@ import { useAfterFirstPaint } from './hooks/useAfterFirstPaint'
 import { useScrollMagnet } from './hooks/useScrollMagnet'
 import { useScrollProgress } from './hooks/useScrollProgress'
 import { useSectionSpacing } from './hooks/useSectionSpacing'
+import { useSectionUrl } from './hooks/useSectionUrl'
 import { isWebGLAvailable } from './lib/webgl'
 
 // La escena 3D (three.js, R3F, drei, modelos) va en su propio paquete y se descarga en
@@ -25,6 +26,7 @@ export function App() {
   useSectionSpacing()
   useScrollProgress()
   useScrollMagnet()
+  useSectionUrl()
   // El 3D arranca cuando el texto ya está pintado y el navegador está inactivo.
   const startScene = useAfterFirstPaint()
 

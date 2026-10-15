@@ -7,6 +7,7 @@ import { PROJECTS } from '../data/projects'
 import { filterProjects, uniqueTags, uniqueYears } from '../lib/filterProjects'
 import { pageCount, pageItems } from '../lib/paginate'
 import ProjectCard from '../components/ui/ProjectCard'
+import ProjectDialog from '../components/ui/ProjectDialog'
 
 // Media query reactiva. El diseño depende del ancho Y del alto de la pantalla (un móvil
 // en horizontal es ancho pero muy bajo), así que se decide aquí, en JS, y no solo con
@@ -106,12 +107,15 @@ export default function Works() {
   const rowHeight = tiny ? '5.25rem' : '6.5rem'
   const blockHeight = compact
     ? `calc(${rowHeight} * ${rows} + ${CARD_GAP} * ${rows - 1})`
-    : '14.5rem'
+    : '18.5rem'
 
   // Filtros y página. Cambiar un filtro vuelve a la página 1 (en el propio handler, sin
   // efectos). Si al redimensionar quedan menos páginas, `page` se recorta más abajo.
   const [filters, setFilters] = useState({ tags: [], year: '' })
   const [nav, setNav] = useState({ page: 0, dir: 1 })
+  // Proyecto abierto en la ventana de detalles, con el rectángulo de su card.
+  const [selected, setSelected] = useState(null)
+  const closeDialog = useCallback(() => setSelected(null), [])
 
   const filtered = useMemo(() => filterProjects(PROJECTS, filters), [filters])
   const total = filtered.length
@@ -380,7 +384,12 @@ export default function Works() {
                     >
                       {visible.map((project) => (
                         <m.li key={project.id} variants={item} custom={nav.dir}>
-                          <ProjectCard {...project} compact={compact} tiny={tiny} />
+                          <ProjectCard
+                            {...project}
+                            compact={compact}
+                            tiny={tiny}
+                            onOpen={(rect) => setSelected({ project, rect })}
+                          />
                         </m.li>
                       ))}
                     </m.ul>
@@ -460,6 +469,17 @@ export default function Works() {
             </div>
           </div>
         </div>
+
+        <AnimatePresence>
+          {selected && (
+            <ProjectDialog
+              key={selected.project.id}
+              project={selected.project}
+              origin={selected.rect}
+              onClose={closeDialog}
+            />
+          )}
+        </AnimatePresence>
       </LazyMotion>
     </section>
   )
