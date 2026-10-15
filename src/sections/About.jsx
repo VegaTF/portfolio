@@ -9,23 +9,25 @@ export default function About() {
     <section
       id="about"
       aria-labelledby="about-title"
-      className="relative flex min-h-svh items-center px-6 pt-[3.75rem] pb-4 sm:pt-20 sm:pb-12 md:px-10 md:py-16 min-[1200px]:pl-24 short:pt-14 short:pb-4"
+      className="relative flex min-h-svh items-center px-6 pt-[3.75rem] pb-4 sm:pt-20 sm:pb-12 md:px-10 md:py-10 desk:py-16 desk:pl-24 short:pt-14 short:pb-4"
     >
       {/* Bloque centrado: contenido a la izquierda y retrato circular grande a la derecha.
           `short:` = pantalla baja (móvil en horizontal): dos columnas aunque falte ancho.
           Los tamaños dependen también del alto (svh) para que el retrato no se coma la
           pantalla en móviles bajos. */}
-      <div className="mx-auto grid w-full max-w-6xl items-center gap-8 md:grid-cols-2 md:gap-16 short:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] short:gap-8">
+      {/* En móvil y tablet (<1200 px) el retrato va arriba y el texto debajo, con el texto
+          en una columna de ancho legible; en escritorio, dos columnas. */}
+      <div className="mx-auto grid w-full max-w-2xl items-center gap-8 desk:max-w-6xl desk:grid-cols-2 desk:gap-16 short:max-w-6xl short:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] short:gap-8">
         {/* Hueco del retrato: el canvas se recorta en círculo sobre él (ver SceneFrame.jsx
             y CameraRig.jsx). Es solo reserva de espacio; el aro lo dibuja SceneFrame. */}
-        <div className="flex justify-center md:order-2 short:order-2">
+        <div className="flex justify-center desk:order-2 short:order-2">
           <div
             id={ABOUT_PORTRAIT_SLOT_ID}
-            className="aspect-square w-full max-w-[min(17rem,24svh)] rounded-full sm:max-w-[min(17rem,32svh)] md:max-w-[min(28rem,60svh)] short:max-w-[min(18rem,68svh)]"
+            className="aspect-square w-full max-w-[min(17rem,24svh)] rounded-full sm:max-w-[min(22rem,34svh)] desk:max-w-[min(28rem,60svh)] short:max-w-[min(18rem,68svh)]"
           />
         </div>
 
-        <div className="md:order-1 short:order-1">
+        <div className="desk:order-1 short:order-1">
           <h2
             id="about-title"
             className="text-4xl font-semibold sm:text-5xl short:text-3xl"

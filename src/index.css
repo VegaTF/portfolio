@@ -20,6 +20,11 @@
    `short:` es la que manda. Debe coincidir con `short` de sections/Works.jsx. */
 @custom-variant short (@media (max-height: 37.5rem));
 
+/* Escritorio (≥ 1200 px): donde aparece el navbar lateral y las secciones pasan de
+   apiladas a dos columnas. Igual que `short`, se declara después de los breakpoints
+   para que gane a `sm:` / `md:` cuando coinciden. Usar `desk:...`. */
+@custom-variant desk (@media (min-width: 75rem));
+
 /* Registradas para que los colores de la malla y del degradado se puedan animar. */
 @property --grid-line {
   syntax: '<color>';

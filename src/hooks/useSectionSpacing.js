@@ -5,6 +5,9 @@ import { useEffect } from 'react'
 const GAP_RATIO = 0.275
 const GAP_MIN = 140
 const GAP_MAX = 260
+// Margen (px) por debajo del borde de la pantalla en el que debe quedar el contenido de
+// la siguiente sección cuando la actual está en reposo (sombras, desenfoque de la card).
+const PEEK_MARGIN = 32
 
 // Pares de secciones consecutivas (la primera "se acerca" a la segunda).
 const PAIRS = [
@@ -34,9 +37,28 @@ export function useSectionSpacing() {
         if (!first || !second) continue
 
         // Hueco "natural" = el actual + lo que ya habíamos acercado.
-        const gap = second.getBoundingClientRect().top - first.getBoundingClientRect().bottom
-        const natural = gap + (pulls[firstId] ?? 0)
-        const pull = Math.max(0, Math.round(natural - target))
+        const currentPull = pulls[firstId] ?? 0
+        const secondTop = second.getBoundingClientRect().top
+        const gap = secondTop - first.getBoundingClientRect().bottom
+        const natural = gap + currentPull
+        let pull = Math.max(0, Math.round(natural - target))
+
+        // Nunca acercar tanto que, con la sección en reposo, asome la siguiente: en
+        // pantallas altas (tablet) sobra mucho aire y el contenido de la sección de
+        // abajo entraría por el borde inferior. Si la sección es más alta que la
+        // pantalla (móvil) no hace falta: su reposo es la última pantalla.
+        const section = document.getElementById(firstId)
+        const sectionRect = section.getBoundingClientRect()
+        if (sectionRect.height <= window.innerHeight + 1) {
+          const room = secondTop + currentPull - sectionRect.top - window.innerHeight - PEEK_MARGIN
+          pull = Math.min(pull, Math.max(0, Math.round(room)))
+        }
+
+        // Y lo mismo al revés: con la SIGUIENTE sección en reposo, el final del contenido
+        // de la actual (p. ej. los botones de About) no debe asomar por arriba. El
+        // acercamiento no puede ser mayor que el aire que hay bajo ese contenido.
+        const below = sectionRect.bottom - first.getBoundingClientRect().bottom
+        pull = Math.min(pull, Math.max(0, Math.round(below - PEEK_MARGIN)))
 
         pulls[firstId] = pull
         document.getElementById(firstId).style.marginBottom = `-${pull}px`
