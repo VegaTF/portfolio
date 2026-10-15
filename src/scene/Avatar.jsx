@@ -20,13 +20,15 @@ import {
 import { mouseState } from '../state/mouseState'
 import { scrollState } from '../state/scrollState'
 
-const AVATAR_URL = '/models/avatar.glb'
+// BASE_URL respeta el `base` de Vite ('/portfolio/' en GitHub Pages).
+const BASE = import.meta.env.BASE_URL
+const AVATAR_URL = `${BASE}models/avatar.glb`
 // Animaciones de Mixamo ya convertidas a JSON compacto (scripts/convert-animations.mjs):
 // ~110 KB en total y sin parser FBX, frente a ~1 MB y mucho CPU con los .fbx.
 const CLIP_URLS = {
-  sitting: '/animations/sitting.json',
-  falling: '/animations/falling.json',
-  breathing: '/animations/breathing.json',
+  sitting: `${BASE}animations/sitting.json`,
+  falling: `${BASE}animations/falling.json`,
+  breathing: `${BASE}animations/breathing.json`,
 }
 const asJSON = (loader) => loader.setResponseType('json')
 const prefersReducedMotion =

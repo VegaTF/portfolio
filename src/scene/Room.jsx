@@ -14,7 +14,7 @@ import { applyOpacity, makeFadeable } from '../lib/fade'
 import { mouseState } from '../state/mouseState'
 import { scrollState } from '../state/scrollState'
 
-const ROOM_URL = '/models/room.glb'
+const ROOM_URL = `${import.meta.env.BASE_URL}models/room.glb`
 
 const MAX_TILT_Y = 0.12 // rad
 const MAX_TILT_X = 0.05 // rad
