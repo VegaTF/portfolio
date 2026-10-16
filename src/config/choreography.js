@@ -21,16 +21,23 @@ export const ease = (t) => {
 export const CAMERA_WINDOWS = [
   [0.15, 0.75], // Home → Trabajos
   [0.12, 0.72], // Trabajos → About
-  [0.12, 0.72], // About → Contacto
+  [0.2, 0.75], // About → Contacto (empieza cuando el retrato ya se ha cerrado)
 ]
 
-// El avatar llega antes que la cámara en la caída, para aterrizar (y quedarse en
-// `breathing`) con margen de scroll antes de que Trabajos esté en pantalla.
+// Home → Trabajos: el avatar usa la MISMA ventana que la cámara. Así la cámara le sigue
+// mientras cae y el avatar se queda a la vista, cruzando la pantalla de derecha a izquierda
+// por el centro. (Si llegara antes que la cámara, caería fuera de cuadro por abajo y
+// reaparecería de golpe a la izquierda.)
 // El tramo About → Contacto no usa ventana: lo gobierna CONTACT_FALL (ver abajo).
 export const AVATAR_WINDOWS = [
-  [0.15, 0.6], // cae
+  CAMERA_WINDOWS[0], // cae junto con la cámara
   [0.12, 0.72], // gira hacia el retrato
 ]
+
+// Amortiguación (lambda de MathUtils.damp) con la que la cámara y el avatar siguen al
+// scroll. Debe ser la MISMA en los dos: si no, con un scroll rápido uno se adelanta al otro
+// (el avatar cae fuera de cuadro y reaparece de golpe).
+export const FOLLOW_DAMPING = 5
 
 // Qué dos secciones rodean a `index` y cuánto avanzamos entre ellas (ya suavizado).
 export function sectionBlend(index, count, windows = CAMERA_WINDOWS) {
@@ -76,19 +83,22 @@ export const AVATAR_KEYS = [
 ]
 
 // Del retrato a Contacto (sin transparencias en el avatar: se vería su cara interior):
-//  1. Se queda en su sitio mientras la cámara sube hacia la habitación, así que sale
-//     de cuadro por abajo.
-//  2. Mientras está fuera de la vista (AVATAR_HIDDEN) se oculta y se recoloca arriba.
-//  3. Entra cayendo desde CONTACT_ENTRY_HEIGHT metros sobre el suelo y aterriza en
-//     la habitación (CONTACT_FALL = [index al empezar, index al aterrizar]).
+//  1. El círculo del retrato se cierra sobre el avatar (PORTRAIT_CLOSE): nunca se le ve
+//     fuera de él, ni "cayendo" sin marco.
+//  2. Con el círculo cerrado (AVATAR_HIDDEN) se oculta y se recoloca arriba; la cámara
+//     empieza a subir hacia la habitación en ese momento (CAMERA_WINDOWS[2]).
+//  3. El marco se reabre a pantalla completa (PORTRAIT_OPEN) y el avatar entra cayendo
+//     desde CONTACT_ENTRY_HEIGHT metros sobre el suelo y aterriza en la habitación
+//     (CONTACT_FALL = [index al empezar, index al aterrizar]).
 export const CONTACT_ENTRY_HEIGHT = 5
-export const AVATAR_HIDDEN = [2.38, 2.5]
+export const AVATAR_HIDDEN = [2.2, 2.5]
 export const CONTACT_FALL = [2.5, 2.85]
 
 // Animaciones: sentado hasta SIT_UNTIL, cayendo hasta LAND_AT, y de pie después.
 // En Contacto vuelve a caer entre CONTACT_FALL[0] y CONTACT_FALL[1].
 export const SIT_UNTIL = 0.15
-export const LAND_AT = 0.6
+// Justo antes de que acabe la ventana de la caída (0.75): ya está llegando al suelo.
+export const LAND_AT = 0.72
 
 // Segundos de mezcla al pasar de una animación a otra ("desde>hasta").
 export const CLIP_FADES = {
@@ -114,7 +124,9 @@ export const ROOM_OPACITY_STOPS = [
 ]
 
 // ── Marco del canvas ─────────────────────────────────────────────────────────
-// El recorte circular del retrato se vuelve a abrir al ir hacia Contacto.
-export const PORTRAIT_OUT = [2.12, 2.55]
+// Al ir de About a Contacto, el círculo del retrato primero se CIERRA sobre el avatar
+// (radio → 0) y después el marco se reabre a pantalla completa para la habitación.
+export const PORTRAIT_CLOSE = [2.0, 2.2]
+export const PORTRAIT_OPEN = [2.25, 2.45]
 // Opacidad del canvas en Contacto (para que destaque el formulario).
 export const CONTACT_CANVAS_OPACITY = 0.6

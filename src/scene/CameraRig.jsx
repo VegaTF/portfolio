@@ -2,11 +2,12 @@ import { useEffect, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { MathUtils } from 'three'
 import { CAMERA_KEYFRAMES } from '../config/cameraKeyframes'
-import { sectionBlend } from '../config/choreography'
+import { FOLLOW_DAMPING, sectionBlend } from '../config/choreography'
 import { measureSlot } from '../lib/measureSlot'
 import { scrollState } from '../state/scrollState'
 
-const DAMPING = 5
+// Misma amortiguación que el avatar (ver choreography.js → FOLLOW_DAMPING).
+const DAMPING = FOLLOW_DAMPING
 const mix = MathUtils.lerp
 
 // Distancia cámara-objetivo de cada keyframe (fija: se usa para calcular el zoom).

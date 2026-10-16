@@ -5,9 +5,11 @@ import { getSectionGeometry } from '../lib/sectionGeometry'
 // PUSH:   fracción del tramo de transición que hay que recorrer para que la página
 //         termine de pasar a la sección siguiente. Más bajo = imán más fuerte.
 //         0.2 es deliberadamente suave: un roce no mueve nada y un gesto claro sí.
-// SETTLE: ms sin scroll tras los que se considera que el usuario ha parado.
+// SETTLE: ms sin ninguna actividad de scroll (rueda, tacto, teclado, barra) tras los que
+//         se considera que el usuario ha parado de verdad. Hasta entonces la página es
+//         100 % suya: el imán no toca nada, ni siquiera "empuja" un poco.
 const PUSH = 0.2
-const SETTLE_MS = 160
+const SETTLE_MS = 1000
 // Tiempo máximo que esperamos a que termine un desplazamiento del imán.
 const MAX_SNAP_MS = 2500
 
@@ -18,7 +20,9 @@ const prefersReducedMotion =
 // Imán de scroll con dirección. Principios (priorizan no ser intrusivo):
 //  - Solo actúa en los TRAMOS DE TRANSICIÓN entre secciones (los mismos en los que la
 //    escena cambia). Mientras se lee una sección alta (móvil) no hace nada.
-//  - Al parar, completa la transición o vuelve al reposo según la dirección del gesto.
+//  - Deja moverse libremente: solo actúa cuando pasa SETTLE_MS (1 s) sin ninguna
+//    actividad de scroll. Entonces completa la transición o vuelve al reposo según la
+//    dirección del gesto. Con "reducir movimiento" no actúa nunca.
 //  - Nunca compite con el usuario: no actúa con el dedo en pantalla o un botón del
 //    ratón pulsado (arrastrando la barra), y cede el control al instante si el usuario
 //    toca, usa la rueda o el teclado mientras la página se está colocando.
@@ -34,6 +38,9 @@ export function useScrollMagnet() {
 
     const settle = () => {
       if (touching || pressed) return
+      // Con "reducir movimiento" no se recoloca nada: un salto instantáneo sería lo más
+      // intrusivo de todo. La página se queda donde el usuario la dejó.
+      if (prefersReducedMotion) return
       const y = window.scrollY
       const { tops, rests, max } = getSectionGeometry()
 

@@ -2,7 +2,8 @@ import { useEffect, useRef } from 'react'
 import { ABOUT_PORTRAIT_SLOT_ID, WORKS_AVATAR_SLOT_ID } from '../config/sections'
 import {
   CONTACT_CANVAS_OPACITY,
-  PORTRAIT_OUT,
+  PORTRAIT_CLOSE,
+  PORTRAIT_OPEN,
   ease,
   sectionBlend,
 } from '../config/choreography'
@@ -43,46 +44,62 @@ export default function SceneFrame({ children }) {
       const backdrop = backdropRef.current
       const ring = ringRef.current
 
-      // Misma transición que la cámara: 0 (sin recorte) → 1 (círculo) al bajar a About
-      // y de vuelta a 0 al ir hacia Contacto.
-      const { from, t } = sectionBlend(index, SECTION_COUNT)
-      const closing = index >= 2 ? 1 : from === 1 ? t : 0
-      const opening = ease((index - PORTRAIT_OUT[0]) / (PORTRAIT_OUT[1] - PORTRAIT_OUT[0]))
-      const amount = closing * (1 - opening)
-
       let ringAmount = 0
 
       if (frame && portrait) {
-        if (amount > 0.001) {
-          const w = window.innerWidth
-          const h = window.innerHeight
-          // El círculo sigue al avatar: va del hueco de Trabajos al del retrato
-          // (la cámara hace el mismo recorrido) y de ahí al centro de la pantalla.
-          // En móvil el avatar de Trabajos se ha desplazado con el contenido (offset).
-          const start = works ?? portrait
-          const startY = start.centerY - (works ? scrollState.offset : 0)
-          const [fromX, fromY, toX, toY] =
-            index < 2
-              ? [start.centerX, startY, portrait.centerX, portrait.centerY]
-              : [portrait.centerX, portrait.centerY, w / 2, h / 2]
-          const cx = lerp(fromX, toX, index < 2 ? t : ease(index - 2))
-          const cy = lerp(fromY, toY, index < 2 ? t : ease(index - 2))
-          // Con amount → 0 el radio crece hasta cubrir la pantalla entera.
-          const cover = Math.hypot(w, h) * 1.3
-          const small = portrait.width / 2
-          const radius = small + (cover - small) * (1 - amount) ** 2
-          frame.style.clipPath = `circle(${radius.toFixed(1)}px at ${cx.toFixed(1)}px ${cy.toFixed(1)}px)`
+        const w = window.innerWidth
+        const h = window.innerHeight
+        const cover = Math.hypot(w, h) * 1.3 // radio que cubre la pantalla entera
+        const small = portrait.width / 2 // radio del retrato
+        // `radius === null` = sin recorte (pantalla completa).
+        let radius = null
+        let cx = 0
+        let cy = 0
 
+        if (index < 2) {
+          // Home → Trabajos → About: el círculo sigue al avatar, del hueco de Trabajos
+          // al del retrato (la cámara hace el mismo recorrido). Misma curva que la cámara:
+          // 0 (sin recorte) → 1 (círculo). En móvil el avatar de Trabajos se ha
+          // desplazado con el contenido (offset).
+          const { from, t } = sectionBlend(index, SECTION_COUNT)
+          const amount = from === 1 ? t : 0
+          if (amount > 0.001) {
+            const start = works ?? portrait
+            const startY = start.centerY - (works ? scrollState.offset : 0)
+            cx = lerp(start.centerX, portrait.centerX, t)
+            cy = lerp(startY, portrait.centerY, t)
+            radius = small + (cover - small) * (1 - amount) ** 2
+            ringAmount = ease((amount - 0.6) / 0.4)
+          }
+        } else {
+          // About → Contacto: el círculo se CIERRA sobre el avatar (que sigue dentro) y,
+          // ya vacío, el marco se reabre a pantalla completa desde el centro para la
+          // habitación. Así el avatar nunca se ve fuera del círculo.
+          const shrink = ease((index - PORTRAIT_CLOSE[0]) / (PORTRAIT_CLOSE[1] - PORTRAIT_CLOSE[0]))
+          const reveal = ease((index - PORTRAIT_OPEN[0]) / (PORTRAIT_OPEN[1] - PORTRAIT_OPEN[0]))
+          if (reveal > 0) {
+            cx = w / 2
+            cy = h / 2
+            radius = reveal >= 1 ? null : cover * reveal
+          } else {
+            cx = portrait.centerX
+            cy = portrait.centerY
+            radius = small * (1 - shrink)
+            ringAmount = 1 - shrink
+          }
+        }
+
+        if (radius === null) {
+          frame.style.clipPath = 'none'
+        } else {
+          frame.style.clipPath = `circle(${radius.toFixed(1)}px at ${cx.toFixed(1)}px ${cy.toFixed(1)}px)`
           // El aro vive en una capa fija (no scrollea con la página) y copia al círculo.
-          ringAmount = ease((amount - 0.6) / 0.4)
           if (ring) {
             const size = radius * 2
             ring.style.width = `${size.toFixed(1)}px`
             ring.style.height = `${size.toFixed(1)}px`
             ring.style.transform = `translate3d(${(cx - radius).toFixed(1)}px, ${(cy - radius).toFixed(1)}px, 0)`
           }
-        } else {
-          frame.style.clipPath = 'none'
         }
         const contact = ease((index - 2.4) / 0.6)
         frame.style.opacity = (1 - (1 - CONTACT_CANVAS_OPACITY) * contact).toFixed(3)

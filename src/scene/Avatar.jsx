@@ -12,6 +12,7 @@ import {
   CONTACT_ENTRY_HEIGHT,
   CONTACT_FALL,
   DEFAULT_CLIP_FADE,
+  FOLLOW_DAMPING,
   LAND_AT,
   SIT_UNTIL,
   ease,
@@ -112,6 +113,8 @@ export default function Avatar() {
   const current = useRef(null) // animación que suena ahora
   const offset = useRef({ x: 0, y: 0, z: 0, yaw: 0 }) // alineación suavizada
   const look = useRef({ yaw: 0, pitch: 0 })
+  // Posición, giro e índice "suavizados" que realmente se aplican (ver useFrame).
+  const smooth = useRef({ x: 0, y: 0, z: 0, yaw: 0, index: 0, ready: false })
 
   // Arranca sentado, sin fundido.
   useEffect(() => {
@@ -131,20 +134,9 @@ export default function Avatar() {
 
     const index = scrollState.index
 
-    // 1) Animación: mezcla suave (y corta) al cambiar de fase.
-    const phase = phaseFor(index)
-    if (current.current && phase !== current.current && actions[phase]) {
-      const next = actions[phase]
-      const previous = actions[current.current]
-      const fade = CLIP_FADES[`${current.current}>${phase}`] ?? DEFAULT_CLIP_FADE
-      next.reset().setEffectiveTimeScale(1).setEffectiveWeight(1).fadeIn(fade).play()
-      previous?.fadeOut(fade)
-      current.current = phase
-    }
-
-    // 2) Posición y giro. Hasta About se interpolan entre keyframes con las ventanas
-    //    del avatar; después se queda en el hueco del retrato (sale de cuadro cuando la
-    //    cámara sube) y, ya oculto, entra cayendo en la habitación.
+    // 1) Posición y giro OBJETIVO. Hasta About se interpolan entre keyframes con las
+    //    ventanas del avatar; después se queda en el hueco del retrato (sale de cuadro
+    //    cuando la cámara sube) y, ya oculto, entra cayendo en la habitación.
     const [stand, room] = [AVATAR_KEYS[2], AVATAR_KEYS[3]]
     let px
     let py
@@ -170,14 +162,49 @@ export default function Avatar() {
       yaw = room.yaw
     }
 
+    // 2) Seguimiento amortiguado. La cámara va amortiguada (CameraRig, FOLLOW_DAMPING):
+    //    si el avatar siguiera el scroll en directo, con un scroll rápido se adelantaría,
+    //    caería fuera de cuadro por abajo y la cámara lo alcanzaría después. Amortiguado
+    //    igual que ella, la distancia entre ambos es siempre la prevista y el avatar cruza
+    //    la pantalla a la vista. Al llegar al tramo oculto (fuera de cuadro) o en el primer
+    //    fotograma se coloca de golpe, para no "deslizarse" entre posiciones sin verse.
+    const s = smooth.current
+    const follow = s.ready && index < AVATAR_HIDDEN[0]
+    if (follow) {
+      s.x = MathUtils.damp(s.x, px, FOLLOW_DAMPING, delta)
+      s.y = MathUtils.damp(s.y, py, FOLLOW_DAMPING, delta)
+      s.z = MathUtils.damp(s.z, pz, FOLLOW_DAMPING, delta)
+      s.yaw = MathUtils.damp(s.yaw, yaw, FOLLOW_DAMPING, delta)
+      s.index = MathUtils.damp(s.index, index, FOLLOW_DAMPING, delta)
+    } else {
+      s.x = px
+      s.y = py
+      s.z = pz
+      s.yaw = yaw
+      s.index = index
+      s.ready = true
+    }
+
+    // 3) Animación: mezcla suave (y corta) al cambiar de fase. La fase se decide con el
+    //    índice amortiguado, para que "caiga" mientras se le ve caer.
+    const phase = phaseFor(s.index)
+    if (current.current && phase !== current.current && actions[phase]) {
+      const next = actions[phase]
+      const previous = actions[current.current]
+      const fade = CLIP_FADES[`${current.current}>${phase}`] ?? DEFAULT_CLIP_FADE
+      next.reset().setEffectiveTimeScale(1).setEffectiveWeight(1).fadeIn(fade).play()
+      previous?.fadeOut(fade)
+      current.current = phase
+    }
+
     const align = avatarAlignment[phase]
     const o = offset.current
     o.x = MathUtils.damp(o.x, align.position[0], 4, delta)
     o.y = MathUtils.damp(o.y, align.position[1], 4, delta)
     o.z = MathUtils.damp(o.z, align.position[2], 4, delta)
     o.yaw = MathUtils.damp(o.yaw, align.rotationY, 4, delta)
-    group.position.set(px + o.x, py + o.y, pz + o.z)
-    group.rotation.y = yaw + o.yaw
+    group.position.set(s.x + o.x, s.y + o.y, s.z + o.z)
+    group.rotation.y = s.yaw + o.yaw
 
     // 3) Oculto mientras está fuera de la vista entre el retrato y Contacto.
     group.visible = !(index > AVATAR_HIDDEN[0] && index < AVATAR_HIDDEN[1])
